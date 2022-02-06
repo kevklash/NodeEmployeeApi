@@ -11,50 +11,53 @@ const candidates = [
   ];
 
 const searchCandidatesV2 = (req, res, next) => {
-    const skillName = req.params.skill;
-    const candidate = candidates.find((cnd) => {
-      return cnd.id === skillName;
-    });
-    if(!candidate){
-      // const error = new Error('No results were found')
-      // error.code = 404;
-      return next(new HttpError('No results were found', 404));
-      // Also: throw error -- If there is no middleware or return statement afterwards,
-      // throw already cancels next function execution
-      // return res.status(404).json({message: 'No results were found'});
-    }
-      res.status(200).json(candidate);
+  const skillName = req.params.skill;
+  const candidate = candidates.find((cnd) => {
+    return cnd.id === skillName;
+  });
+  if(!candidate){
+    // const error = new Error('No results were found')
+    // error.code = 404;
+    return next(new HttpError('No results were found', 404));
+    // Also: throw error -- If there is no middleware or return statement afterwards,
+    // throw already cancels next function execution
+    // return res.status(404).json({message: 'No results were found'});
   }
+    res.status(200).json(candidate);
+}
 
 // Search Candidates with query strings
 // Ref: https://www.youtube.com/watch?v=QTAYRmMsVCI
 const searchCandidates = (req, res, next) => {
-    const skills = req.query.skills;
-    if(!skills){
-        return next(new HttpError('Data must not be empty', 400)); 
-    }
-    const languages = skills.split(",");
+  const skills = req.query.skills; // Get our query string param
+  // Check that it is not empty
+  if(!skills){
+    return res.status(400).json('Data must not be empty');
+  }
+  // Create our array of requested languages
+  const languages = skills.split(",");
 
-    // Check if there is data
-    if(candidates.length === 0){
-        return next(new HttpError('There are no candidates', 404)); 
-    }
+  // Check if there is data in candidates
+  if(candidates.length === 0){
+    return res.status(404).json('There are no candidates');
+  }
 
-    // Initialize the matches
-    const matches = [];
+  // Initialize the matches
+  const matches = [];
 
-    // Start searching
-    for (let candidate of candidates) {
-        helpers.finder(candidate, languages, matches);
-    }
+  // Start searching
+  for (let candidate of candidates) {
+    // Call our helper functions
+    helpers.finder(candidate, languages, matches);
+  }
 
-    // check if there are no matches
-    if(matches.length === 0){
-        return next(new HttpError('No results match the search criteria', 404)); 
-    }
+  // check if there are no matches
+  if(matches.length === 0){
+    return res.status(404).json('No results match the search criteria');
+  }
 
-    // console.log(skills);
-    res.status(200).json(matches[0]);
+  // If there are matches, return them
+  res.status(200).json(matches[0]);
     
   }
 
